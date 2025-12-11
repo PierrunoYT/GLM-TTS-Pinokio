@@ -86,6 +86,16 @@ module.exports = {
         ],
       }
     },
+    // Patch gradio_app.py to use 127.0.0.1 instead of 0.0.0.0 for Windows compatibility
+    {
+      method: "shell.run",
+      params: {
+        path: "GLM-TTS",
+        message: [
+          "powershell -Command \"(Get-Content tools/gradio_app.py) -replace 'server_name=\\\"0.0.0.0\\\"', 'server_name=\\\"127.0.0.1\\\"' | Set-Content tools/gradio_app.py\""
+        ],
+      }
+    },
     {
       method: "notify",
       params: {

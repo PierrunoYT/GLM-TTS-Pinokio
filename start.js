@@ -7,7 +7,10 @@ module.exports = {
       params: {
         venv: "env",
         path: "GLM-TTS",
-        env: { "PYTHONPATH": "." },
+        env: { 
+          "PYTHONPATH": ".",
+          "GRADIO_SERVER_NAME": "127.0.0.1"
+        },
         message: [
           "python tools/gradio_app.py"
         ],
@@ -23,7 +26,7 @@ module.exports = {
     {
       method: "local.set",
       params: {
-        url: "http://127.0.0.1:7860"
+        url: "http://127.0.0.1:8048"
       }
     },
     {
