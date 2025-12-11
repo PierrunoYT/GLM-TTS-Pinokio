@@ -19,10 +19,11 @@ module.exports = {
       }
     },
     // Set the local URL variable for the "Open Web UI" button
+    // Replace 0.0.0.0 with 127.0.0.1 for Windows compatibility
     {
       method: "local.set",
       params: {
-        url: "{{input.event[0]}}"
+        url: "http://127.0.0.1:7860"
       }
     },
     {
