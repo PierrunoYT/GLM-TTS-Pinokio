@@ -7,7 +7,7 @@ module.exports = {
       params: {
         venv: "env",
         path: "GLM-TTS",
-        env: { },
+        env: { "PYTHONPATH": "." },
         message: [
           "python tools/gradio_app.py"
         ],
