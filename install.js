@@ -31,13 +31,13 @@ module.exports = {
         ],
       }
     },
-    // Install deepspeed (must be after torch is installed)
+    // Install deepspeed from precompiled wheel (must be after torch is installed)
     {
       method: "shell.run",
       params: {
         venv: "env",
         message: [
-          "pip install deepspeed==0.14.5"
+          "uv pip install https://github.com/6Morpheus6/deepspeed-windows-wheels/releases/download/v0.17.5/deepspeed-0.17.5+e1560d84-2.7torch+cu128-cp311-cp311-win_amd64.whl"
         ],
       }
     },
