@@ -15,6 +15,7 @@ module.exports = {
       params: {
         uri: "torch.js",
         params: {
+          path: "GLM-TTS",
           venv: "env",
           xformers: false   // GLM-TTS doesn't require xformers
         }
@@ -36,6 +37,7 @@ module.exports = {
       method: "shell.run",
       params: {
         venv: "env",
+        path: "GLM-TTS",
         message: [
           "uv pip install https://github.com/6Morpheus6/deepspeed-windows-wheels/releases/download/v0.17.5/deepspeed-0.17.5+e1560d84-2.7torch+cu128-cp310-cp310-win_amd64.whl"
         ],
@@ -46,6 +48,7 @@ module.exports = {
       method: "shell.run",
       params: {
         venv: "env",
+        path: "GLM-TTS",
         message: [
           "pip install ttsfrd"
         ],
@@ -56,6 +59,7 @@ module.exports = {
       method: "shell.run",
       params: {
         venv: "env",
+        path: "GLM-TTS",
         message: [
           "pip install soxr"
         ],
@@ -65,6 +69,7 @@ module.exports = {
     {
       method: "shell.run",
       params: {
+        path: "GLM-TTS",
         message: [
           "mkdir ckpt"
         ],
@@ -75,6 +80,7 @@ module.exports = {
       method: "shell.run",
       params: {
         venv: "env",
+        path: "GLM-TTS",
         message: [
           "huggingface-cli download zai-org/GLM-TTS --local-dir ckpt"
         ],
