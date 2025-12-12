@@ -5,7 +5,7 @@ module.exports = {
       method: "shell.run",
       params: {
         message: [
-          "git clone https://github.com/zai-org/GLM-TTS.git"
+          "git clone https://github.com/PierrunoYT/GLM-TTS.git"
         ],
       }
     },
