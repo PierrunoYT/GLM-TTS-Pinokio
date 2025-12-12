@@ -82,7 +82,7 @@ module.exports = {
         venv: "env",
         path: "GLM-TTS",
         message: [
-          "huggingface-cli download zai-org/GLM-TTS --local-dir ckpt"
+          "hf download zai-org/GLM-TTS --local-dir ckpt"
         ],
       }
     },
