@@ -43,17 +43,7 @@ module.exports = {
         ],
       }
     },
-    // Install ttsfrd for better text processing (Windows-compatible alternative to WeTextProcessing)
-    {
-      method: "shell.run",
-      params: {
-        venv: "env",
-        path: "GLM-TTS",
-        message: [
-          "pip install ttsfrd"
-        ],
-      }
-    },
+
     // Install soxr (required by transformers)
     {
       method: "shell.run",
