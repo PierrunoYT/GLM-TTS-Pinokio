@@ -1,6 +1,6 @@
 const path = require('path')
 module.exports = {
-  version: "1.0.0",
+  version: "3.7",
   title: "GLM-TTS",
   description: "🎙️ Controllable & Emotion-Expressive Zero-shot TTS with Multi-Reward Reinforcement Learning. High-quality text-to-speech synthesis supporting zero-shot voice cloning and streaming inference with natural emotional expression.",
   icon: "icon.jpg",
