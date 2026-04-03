@@ -9,14 +9,17 @@ module.exports = {
         ],
       }
     },
-    // Patch requirements.txt: remove packages handled separately (torch, deepspeed,
-    // openai_whisper) and fix non-existent fastapi version that causes pip to abort
+    // Replace upstream requirements.txt with our pre-patched version:
+    // - removes torch/torchaudio/torchvision (handled by torch.js with CUDA)
+    // - removes deepspeed (handled by Windows wheel below)
+    // - removes openai-whisper (installed separately after setuptools)
+    // - removes WeTextProcessing (installed separately after pynini via conda)
+    // - fixes fastapi version (0.123.9 does not exist on PyPI)
     {
       method: "shell.run",
       params: {
-        path: "GLM-TTS",
         message: [
-          "powershell -Command \"(Get-Content requirements.txt) | Where-Object { $_ -notmatch '^(torch|torchaudio|torchvision|deepspeed|openai.whisper|WeTextProcessing)==' } | ForEach-Object { $_ -replace 'fastapi==0.123.9', 'fastapi==0.115.12' } | Set-Content requirements.txt\""
+          "powershell -Command \"Copy-Item requirements.txt GLM-TTS\\requirements.txt -Force\""
         ],
       }
     },
