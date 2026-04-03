@@ -65,14 +65,23 @@ module.exports = {
         ],
       }
     },
-    // Install WeTextProcessing without pynini (pynini cannot be built on Windows via pip)
+    // Install pynini via conda-forge (no Windows pip wheel exists), then WeTextProcessing normally
+    {
+      method: "shell.run",
+      params: {
+        path: "GLM-TTS",
+        message: [
+          "conda install -c conda-forge pynini==2.1.5 --prefix env -y"
+        ],
+      }
+    },
     {
       method: "shell.run",
       params: {
         venv: "env",
         path: "GLM-TTS",
         message: [
-          "pip install WeTextProcessing==1.0.3 --no-deps"
+          "pip install WeTextProcessing==1.0.3"
         ],
       }
     },
