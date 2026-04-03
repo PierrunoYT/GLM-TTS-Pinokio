@@ -9,6 +9,17 @@ module.exports = {
         ],
       }
     },
+    // Patch requirements.txt: remove packages handled separately (torch, deepspeed)
+    // and fix non-existent fastapi version that causes pip to abort
+    {
+      method: "shell.run",
+      params: {
+        path: "GLM-TTS",
+        message: [
+          "powershell -Command \"(Get-Content requirements.txt) | Where-Object { $_ -notmatch '^(torch|torchaudio|torchvision|deepspeed)==' } | ForEach-Object { $_ -replace 'fastapi==0.123.9', 'fastapi==0.115.12' } | Set-Content requirements.txt\""
+        ],
+      }
+    },
     // Install PyTorch with CUDA support first
     {
       method: "script.start",
