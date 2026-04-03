@@ -9,7 +9,7 @@ module.exports = {
         ],
       }
     },
-    // Replace upstream requirements.txt with our pre-patched version:
+    // Copy upstream requirements.txt into cloned repo, then patch it:
     // - removes torch/torchaudio/torchvision (handled by torch.js with CUDA)
     // - removes deepspeed (handled by Windows wheel below)
     // - removes openai-whisper (installed separately after setuptools)
@@ -20,6 +20,15 @@ module.exports = {
       params: {
         message: [
           "powershell -Command \"Copy-Item requirements.txt GLM-TTS\\requirements.txt -Force\""
+        ],
+      }
+    },
+    {
+      method: "shell.run",
+      params: {
+        path: "GLM-TTS",
+        message: [
+          "powershell -Command \"(Get-Content requirements.txt) | Where-Object { $_ -notmatch '^(torch|torchaudio|torchvision|deepspeed|openai.whisper|WeTextProcessing)==' } | ForEach-Object { $_ -replace 'fastapi==0.123.9', 'fastapi==0.115.12' } | Set-Content requirements.txt\""
         ],
       }
     },
