@@ -9,29 +9,6 @@ module.exports = {
         ],
       }
     },
-    // Copy upstream requirements.txt into cloned repo, then patch it:
-    // - removes torch/torchaudio/torchvision (handled by torch.js with CUDA)
-    // - removes deepspeed (handled by Windows wheel below)
-    // - removes openai-whisper (installed separately after setuptools)
-    // - removes WeTextProcessing (installed separately after pynini via conda)
-    // - fixes fastapi version (0.123.9 does not exist on PyPI)
-    {
-      method: "shell.run",
-      params: {
-        message: [
-          "powershell -Command \"Copy-Item requirements.txt GLM-TTS\\requirements.txt -Force\""
-        ],
-      }
-    },
-    {
-      method: "shell.run",
-      params: {
-        path: "GLM-TTS",
-        message: [
-          "powershell -Command \"(Get-Content requirements.txt) | Where-Object { $_ -notmatch '^(torch|torchaudio|torchvision|deepspeed|openai.whisper|WeTextProcessing)==' } | ForEach-Object { $_ -replace 'fastapi==0.123.9', 'fastapi==0.115.12' } | Set-Content requirements.txt\""
-        ],
-      }
-    },
     // Install PyTorch with CUDA support first
     {
       method: "script.start",
@@ -40,64 +17,49 @@ module.exports = {
         params: {
           path: "GLM-TTS",
           venv: "env",
-          xformers: false   // GLM-TTS doesn't require xformers
+          xformers: false
         }
       }
     },
-    // Ensure setuptools is available (required to build openai-whisper and others from source)
+    // Install dependencies from pre-patched requirements.txt in repo root:
+    // - torch/torchaudio/torchvision excluded (handled by torch.js with CUDA)
+    // - deepspeed excluded (handled by Windows wheel below)
+    // - openai-whisper excluded (installed separately below)
+    // - WeTextProcessing excluded (installed with --no-deps below to avoid pynini)
+    // - fastapi version fixed (0.123.9 does not exist on PyPI)
     {
       method: "shell.run",
       params: {
         venv: "env",
         path: "GLM-TTS",
         message: [
-          "pip install -U setuptools wheel Cython"
+          "uv pip install -r ../requirements.txt"
         ],
       }
     },
-    // Install GLM-TTS dependencies from requirements.txt
+    // Install openai-whisper separately
     {
       method: "shell.run",
       params: {
         venv: "env",
         path: "GLM-TTS",
         message: [
-          "pip install -r requirements.txt"
+          "uv pip install openai-whisper==20231117"
         ],
       }
     },
-    // Install openai-whisper separately after setuptools is confirmed present
+    // Install WeTextProcessing without pynini (pynini has no Windows pip wheel)
     {
       method: "shell.run",
       params: {
         venv: "env",
         path: "GLM-TTS",
         message: [
-          "pip install openai-whisper==20231117"
+          "uv pip install WeTextProcessing==1.0.3 --no-deps"
         ],
       }
     },
-    // Install pynini via conda-forge (no Windows pip wheel exists), then WeTextProcessing normally
-    {
-      method: "shell.run",
-      params: {
-        path: "GLM-TTS",
-        message: [
-          "conda install -c conda-forge pynini==2.1.5 --prefix env -y"
-        ],
-      }
-    },
-    {
-      method: "shell.run",
-      params: {
-        venv: "env",
-        path: "GLM-TTS",
-        message: [
-          "pip install WeTextProcessing==1.0.3"
-        ],
-      }
-    },
-    // Install deepspeed from precompiled wheel (must be after torch is installed)
+    // Install deepspeed from precompiled Windows wheel (must be after torch)
     {
       method: "shell.run",
       params: {
@@ -108,7 +70,6 @@ module.exports = {
         ],
       }
     },
-
     // Install soxr (required by transformers)
     {
       method: "shell.run",
@@ -116,7 +77,7 @@ module.exports = {
         venv: "env",
         path: "GLM-TTS",
         message: [
-          "pip install soxr"
+          "uv pip install soxr"
         ],
       }
     },
