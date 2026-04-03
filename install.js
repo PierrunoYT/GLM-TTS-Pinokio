@@ -9,14 +9,14 @@ module.exports = {
         ],
       }
     },
-    // Patch requirements.txt: remove packages handled separately (torch, deepspeed)
-    // and fix non-existent fastapi version that causes pip to abort
+    // Patch requirements.txt: remove packages handled separately (torch, deepspeed,
+    // openai_whisper) and fix non-existent fastapi version that causes pip to abort
     {
       method: "shell.run",
       params: {
         path: "GLM-TTS",
         message: [
-          "powershell -Command \"(Get-Content requirements.txt) | Where-Object { $_ -notmatch '^(torch|torchaudio|torchvision|deepspeed)==' } | ForEach-Object { $_ -replace 'fastapi==0.123.9', 'fastapi==0.115.12' } | Set-Content requirements.txt\""
+          "powershell -Command \"(Get-Content requirements.txt) | Where-Object { $_ -notmatch '^(torch|torchaudio|torchvision|deepspeed|openai.whisper)==' } | ForEach-Object { $_ -replace 'fastapi==0.123.9', 'fastapi==0.115.12' } | Set-Content requirements.txt\""
         ],
       }
     },
@@ -32,6 +32,17 @@ module.exports = {
         }
       }
     },
+    // Ensure setuptools is available (required to build openai-whisper and others from source)
+    {
+      method: "shell.run",
+      params: {
+        venv: "env",
+        path: "GLM-TTS",
+        message: [
+          "pip install -U setuptools wheel"
+        ],
+      }
+    },
     // Install GLM-TTS dependencies from requirements.txt
     {
       method: "shell.run",
@@ -40,6 +51,17 @@ module.exports = {
         path: "GLM-TTS",
         message: [
           "pip install -r requirements.txt"
+        ],
+      }
+    },
+    // Install openai-whisper separately after setuptools is confirmed present
+    {
+      method: "shell.run",
+      params: {
+        venv: "env",
+        path: "GLM-TTS",
+        message: [
+          "pip install openai-whisper==20231117"
         ],
       }
     },
