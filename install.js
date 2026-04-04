@@ -1,4 +1,7 @@
 module.exports = {
+  requires: {
+    bundle: "ai",
+  },
   run: [
     // Clone GLM-TTS repository
     {
@@ -9,96 +12,69 @@ module.exports = {
         ],
       }
     },
-    // Install PyTorch with CUDA support first
-    {
-      method: "script.start",
-      params: {
-        uri: "torch.js",
-        params: {
-          path: "GLM-TTS",
-          venv: "env",
-          xformers: false
-        }
-      }
-    },
-    // Install dependencies from pre-patched requirements.txt in repo root:
-    // - torch/torchaudio/torchvision excluded (handled by torch.js with CUDA)
-    // - deepspeed excluded (handled by Windows wheel below)
-    // - openai-whisper excluded (installed separately below)
-    // - WeTextProcessing excluded (installed with --no-deps below to avoid pynini)
-    // - fastapi version fixed (0.123.9 does not exist on PyPI)
     {
       method: "shell.run",
       params: {
-        venv: "env",
+      conda: {
+        path: "conda_env",
+        python: "python=3.10.16"
+        },
+        path: "GLM-TTS",
+        message: "conda install -y -c conda-forge pynini"
+      }
+    },
+    // Install dependencies from pre-patched requirements.txt in repo root
+    {
+      method: "shell.run",
+      params: {
+        conda: "conda_env",
         path: "GLM-TTS",
         message: [
+          "uv pip install setuptools==69.5.1 wheel",
           "uv pip install -r ../requirements.txt"
         ],
       }
     },
-    // Install openai-whisper separately
+    // Install OpenAI Whisper with --no-build-isolation
     {
       method: "shell.run",
       params: {
-        venv: "env",
+        conda: "conda_env",
         path: "GLM-TTS",
-        message: [
-          "uv pip install openai-whisper==20231117"
-        ],
+        message: "uv pip install openai-whisper==20231117 --no-build-isolation"
       }
     },
     // Install WeTextProcessing without pynini (pynini has no Windows pip wheel)
     {
       method: "shell.run",
       params: {
-        venv: "env",
+        conda: "conda_env",
         path: "GLM-TTS",
         message: [
+          "uv pip install soxr",
           "uv pip install WeTextProcessing==1.0.3 --no-deps"
         ],
       }
     },
-    // Install deepspeed from precompiled Windows wheel (must be after torch)
+    // Install PyTorch with CUDA support
     {
-      method: "shell.run",
+      method: "script.start",
       params: {
-        venv: "env",
-        path: "GLM-TTS",
-        message: [
-          "uv pip install https://github.com/6Morpheus6/deepspeed-windows-wheels/releases/download/v0.17.5/deepspeed-0.17.5+e1560d84-2.7torch+cu128-cp310-cp310-win_amd64.whl"
-        ],
-      }
-    },
-    // Install soxr (required by transformers)
-    {
-      method: "shell.run",
-      params: {
-        venv: "env",
-        path: "GLM-TTS",
-        message: [
-          "uv pip install soxr"
-        ],
-      }
-    },
-    // Create checkpoint directory
-    {
-      method: "shell.run",
-      params: {
-        path: "GLM-TTS",
-        message: [
-          "mkdir ckpt"
-        ],
+        uri: "torch.js",
+        params: {
+          conda: "conda_env",
+          path: "GLM-TTS"
+        }
       }
     },
     // Pre-download GLM-TTS model from HuggingFace
     {
       method: "shell.run",
       params: {
-        venv: "env",
+        conda: "conda_env",
         path: "GLM-TTS",
         message: [
-          "hf download zai-org/GLM-TTS --local-dir ckpt"
+          "hf download zai-org/GLM-TTS --local-dir=./ckpt && dir"
         ],
       }
     },

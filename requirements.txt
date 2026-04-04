@@ -12,7 +12,6 @@ zhconv==1.4.3
 zhon==2.1.1
 
 inflect==7.3.1
-onnxruntime_gpu==1.19.0
 contractions==0.1.73
 debugpy==1.8.0
 einops==0.8.1
@@ -20,7 +19,8 @@ emoji==2.14.1
 evaluation==0.0.2
 fastapi==0.115.12
 funasr==1.1.6
-gradio==6.1.0
+gradio==6.10.0
+ruamel.yaml==0.18.0
 HyperPyYAML==1.2.2
 jieba==0.42.1
 jiwer==4.0.0

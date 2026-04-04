@@ -1,11 +1,14 @@
 module.exports = {
+  requires: {
+    bundle: "ai",
+  },
   daemon: true,
   run: [
     // Launch GLM-TTS Gradio Web UI
     {
       method: "shell.run",
       params: {
-        venv: "env",
+        conda: "conda_env",
         path: "GLM-TTS",
         env: { 
           "PYTHONPATH": ".",

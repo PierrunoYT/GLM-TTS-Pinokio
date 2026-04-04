@@ -3,13 +3,7 @@ module.exports = {
     {
       method: "fs.rm",
       params: {
-        path: "env"
-      }
-    },
-    {
-      method: "fs.rm",
-      params: {
-        path: "GLM-TTS/env"
+        path: "GLM-TTS"
       }
     }
   ]
