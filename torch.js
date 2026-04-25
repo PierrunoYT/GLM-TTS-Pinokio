@@ -21,6 +21,7 @@ module.exports = {
       "when": "{{gpu === 'nvidia' && platform === 'linux'}}",
       "method": "shell.run",
       "params": {
+        "bluefairy": "off",
         "conda": "{{args && args.conda ? args.conda : null}}",
         "path": "{{args && args.path ? args.path : '.'}}",
         "message": [
