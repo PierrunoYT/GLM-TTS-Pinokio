@@ -3,7 +3,7 @@ module.exports = {
     {
       method: "fs.link",
       params: {
-        venv: "env"
+        venv: "GLM-TTS/conda_env"
       }
     }
   ]

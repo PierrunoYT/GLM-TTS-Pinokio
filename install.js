@@ -74,12 +74,15 @@ module.exports = {
         conda: "conda_env",
         path: "GLM-TTS",
         message: [
-          "hf download zai-org/GLM-TTS --local-dir=./ckpt && dir"
+          "hf download zai-org/GLM-TTS --local-dir=./ckpt"
         ],
       }
     },
-    // Patch gradio_app.py to use 127.0.0.1 instead of 0.0.0.0 for Windows compatibility
+    // Patch gradio_app.py to use 127.0.0.1 instead of 0.0.0.0 for Windows compatibility.
+    // Only needed on Windows where 0.0.0.0 cannot be opened in the browser; the
+    // command relies on PowerShell, which is unavailable on Linux/macOS.
     {
+      when: "{{platform === 'win32'}}",
       method: "shell.run",
       params: {
         path: "GLM-TTS",
