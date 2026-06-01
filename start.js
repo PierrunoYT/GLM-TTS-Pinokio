@@ -1,10 +1,6 @@
 module.exports = {
-  requires: {
-    bundle: "ai",
-  },
   daemon: true,
   run: [
-    // Launch GLM-TTS Gradio Web UI
     {
       method: "shell.run",
       params: {
@@ -18,18 +14,15 @@ module.exports = {
           "python tools/gradio_app.py"
         ],
         on: [{
-          // Monitor for Gradio's HTTP URL output
-          "event": "/http:\\/\\/[^\\s\\/]+:\\d{2,5}(?=[^\\w]|$)/",
+          "event": "/(http:\\/\\/\\S+)/",
           "done": true
         }]
       }
     },
-    // Set the local URL variable for the "Open Web UI" button
-    // Replace 0.0.0.0 with 127.0.0.1 for Windows compatibility
     {
       method: "local.set",
       params: {
-        url: "http://127.0.0.1:8048"
+        url: "{{input.event[1]}}"
       }
     },
     {
