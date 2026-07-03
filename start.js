@@ -6,9 +6,8 @@ module.exports = {
       params: {
         conda: "conda_env",
         path: "GLM-TTS",
-        env: { 
-          "PYTHONPATH": ".",
-          "GRADIO_SERVER_NAME": "127.0.0.1"
+        env: {
+          "PYTHONPATH": "."
         },
         message: [
           "python tools/gradio_app.py"
