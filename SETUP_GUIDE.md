@@ -1,126 +1,107 @@
 # GLM-TTS Setup Guide
 
-## Recommended: Install via Pinokio
+This repository launches [GLM-TTS](https://github.com/zai-org/GLM-TTS) through
+[Pinokio](https://pinokio.computer). Upstream code is downloaded into `GLM-TTS/`;
+the launcher's `app/launch.py` configures the local server.
 
-This repo is a [Pinokio](https://pinokio.computer) launcher for [GLM-TTS](https://github.com/zai-org/GLM-TTS). The easiest way to set it up is through Pinokio itself:
+## Install and run
 
-1. Open this app in Pinokio and click **Install**.
-2. `install.js` will automatically:
-   - Clone `zai-org/GLM-TTS`
-   - Create a conda environment (`GLM-TTS/conda_env`, Python 3.10.16)
-   - Install `pynini` via conda (not available as a Windows pip wheel)
-   - Install the pre-patched `requirements.txt` from this repo's root
-   - Install `openai-whisper` with `--no-build-isolation`
-   - Install `WeTextProcessing` (without its `pynini` dependency, since it was installed via conda)
-   - Install PyTorch/CUDA (or ROCm/DirectML/CPU, depending on your GPU) via `torch.js`
-   - Download the GLM-TTS model checkpoints from HuggingFace into `GLM-TTS/ckpt`
-   - On Windows, patch `tools/gradio_app.py` to bind to `127.0.0.1` instead of `0.0.0.0` (required for the browser to open the UI)
-3. Click **Start** to launch the Gradio web UI.
+1. Open this repository in Pinokio and click **Install**.
+2. Installation clones the application if needed, creates `GLM-TTS/conda_env`
+   with Python 3.10.16, and installs Pynini and FFmpeg through Conda.
+3. It installs the selected PyTorch backend, launcher requirements, Whisper
+   20240930, and WeTextProcessing 1.0.3, then downloads models to `GLM-TTS/ckpt`.
+4. Critical Python imports are checked before `GLM-TTS/.installed` is written.
+5. Click **Start**, then **Open Web UI**. Upload reference speech, enter its
+   transcript and the text to synthesize, then generate audio.
 
-Once installed, the menu also gives you **Update** (git pull), **Save Disk Space** (dedupe the conda env), and **Reset** (revert to a pre-install state).
+The server binds to `127.0.0.1`. Gradio selects an available port; use the URL
+shown in Pinokio. The launcher imports the upstream UI without modifying it.
 
-## Manual Setup (without Pinokio)
+## Platform behavior
 
-If you want to reproduce the same environment by hand:
+| Platform | Selected backend |
+| --- | --- |
+| Windows/Linux with NVIDIA | PyTorch 2.7.0, CUDA 12.8 |
+| Linux with AMD | PyTorch 2.7.0, ROCm 6.3; CPU ONNX Runtime |
+| Windows with AMD | CPU; upstream does not select DirectML devices |
+| Apple Silicon | PyTorch 2.7.0 from PyPI; upstream currently selects CPU |
+| Intel Mac | Legacy PyTorch 2.2.2 from PyPI |
+| Other Windows/Linux systems | PyTorch 2.7.0 CPU |
 
-### Prerequisites
+NVIDIA is the primary deployment path. Dependency resolution is not an inference
+test: GPU drivers, supported ROCm hardware, and model compatibility still matter.
+Intel Mac uses an older PyTorch because newer wheels are unavailable; compatibility
+with current upstream checkpoint loading is not guaranteed. This launcher does
+not disable checkpoint-loading security checks.
 
-- Conda (Miniconda/Anaconda)
-- Git
-- `uv` (`pip install uv`)
+## Maintenance and recovery
 
-### Step 1: Clone the Repository
+- **Install** resumes dependencies and model downloads when the clone exists.
+  Existing installations without the completion marker need one Install run.
+- **Update** fast-forwards both repositories and reruns installation. Local changes
+  or diverged branches may prevent a pull; inspect the Git diff before resolving.
+- **Save Disk Space** invokes Pinokio's environment deduplication.
+- **Reset** deletes all of `GLM-TTS/`, including checkpoints, the environment,
+  local edits, and outputs saved there. Back up needed files.
+- An interrupted clone can be removed with **Reset incomplete installation**.
 
-```bash
+Older versions patched `GLM-TTS/tools/gradio_app.py` on Windows. If that change
+blocks Update, inspect `git -C GLM-TTS diff -- tools/gradio_app.py` and revert only
+the obsolete binding edit, preserving your own changes.
+
+## Manual setup
+
+Run from a checkout of **this launcher repository**, with Git, Conda, and uv
+available. Keep using the same shell after activating the environment.
+
+```sh
 git clone https://github.com/zai-org/GLM-TTS.git
+conda create -y -p ./GLM-TTS/conda_env python=3.10.16
+conda activate ./GLM-TTS/conda_env
+conda install -y -c conda-forge pynini ffmpeg
 cd GLM-TTS
 ```
 
-### Step 2: Create the Conda Environment
+Run the commands in the matching branch of `../torch.js` first. They select the
+backend and install ONNX Runtime and, for NVIDIA, DeepSpeed. Omit the optional
+Pinokio xformers template expression when copying a command into a shell.
+Then run:
 
-```bash
-conda create -y -p ./conda_env python=3.10.16
-conda run -p ./conda_env conda install -y -c conda-forge pynini
+```sh
+uv pip install setuptools==69.5.1 wheel
+uv pip install -r ../requirements.txt
+uv pip install openai-whisper==20240930 --no-build-isolation -c ../requirements.txt
+uv pip install WeTextProcessing==1.0.3 --no-deps
+hf download zai-org/GLM-TTS --local-dir=./ckpt
+python ../app/launch.py
 ```
 
-### Step 3: Install Dependencies
+On Linux with AMD, append `--no-deps` to the Whisper command to preserve ROCm's
+Triton. Its other dependencies are in `requirements.txt`. WeTextProcessing uses
+Conda's Pynini instead of its older pip pin; `importlib-resources` is explicit.
+`pip check` may report that intentional Pynini version difference, or Whisper's
+Triton distribution name on ROCm.
 
-```bash
-conda run -p ./conda_env uv pip install setuptools==69.5.1 wheel
-conda run -p ./conda_env uv pip install -r ../requirements.txt
-conda run -p ./conda_env uv pip install openai-whisper==20231117 --no-build-isolation
-conda run -p ./conda_env uv pip install soxr
-conda run -p ./conda_env uv pip install WeTextProcessing==1.0.3 --no-deps
-```
-
-**Note:** `requirements.txt` (in this repo's root, not `GLM-TTS/requirements.txt`) already excludes PyTorch, `deepspeed`, `onnxruntime_gpu`, and `openai-whisper`, since those are installed separately with platform-specific settings (see `torch.js`).
-
-### Step 4: Install PyTorch
-
-Pick the command matching your platform/GPU — see `torch.js` for the full matrix (NVIDIA/AMD/CPU on Windows/Linux/macOS). Example for Windows + NVIDIA:
-
-```bash
-conda run -p ./conda_env uv pip install torch==2.7.0 torchvision==0.22.0 torchaudio==2.7.0 --index-url https://download.pytorch.org/whl/cu128 --force-reinstall --no-deps
-conda run -p ./conda_env uv pip install triton-windows==3.3.1.post19
-conda run -p ./conda_env uv pip install onnxruntime_gpu==1.19.0
-```
-
-### Step 5: Download Model Checkpoints
-
-```bash
-conda run -p ./conda_env hf download zai-org/GLM-TTS --local-dir=./ckpt
-```
-
-(Older `huggingface_hub` versions use `huggingface-cli download` instead of `hf download`.)
-
-### Step 6: Run Inference / Web UI
-
-```bash
-conda run -p ./conda_env python glmtts_inference.py --data=example_zh --exp_name=_test --use_cache
-conda run -p ./conda_env python tools/gradio_app.py
-```
-
-On Windows, `tools/gradio_app.py` launches with `server_name="0.0.0.0"`, which browsers can't open directly — either patch it to `127.0.0.1` (as `install.js` does automatically) or connect to the printed local URL shown in the console output.
+Manual setup does not create Pinokio's completion marker. Run **Install** in
+Pinokio to validate and register an existing manual installation.
 
 ## Troubleshooting
 
-### Issue: "No module named 'soxr'"
+Check `logs/api/install.js/latest` or `logs/api/start.js/latest` first.
 
-**Solution:** `uv pip install soxr`
+- Missing packages: rerun Install; manual commands must use the Conda environment.
+- Model download failure: rerun Install to resume. Preserve the downloaded
+  repository layout under `ckpt` instead of creating guessed model subdirectories.
+- Browser connection failure: use the URL reported by the current Start session.
+- Update conflict: inspect local Git changes; Update does not discard them.
 
-### Issue: "pynini" installation fails via pip
+## Development checks
 
-**Solution:** This is expected on Windows — `pynini` has no Windows pip wheel. Install it via conda instead: `conda install -y -c conda-forge pynini`, then install `WeTextProcessing` with `--no-deps` so it doesn't try to pull in `pynini` again.
-
-### Issue: Models not found (404 error from HuggingFace)
-
-**Solution:** Download the models first (see Step 5). The `ckpt` directory must contain:
-- speech_tokenizer
-- llm (language model)
-- flow (flow model)
-- vocoder
-- frontend resources
-
-### Issue: Gradio UI won't open in the browser on Windows
-
-**Solution:** `tools/gradio_app.py` binds to `0.0.0.0` by default, which some Windows browsers can't open directly. Patch it to `127.0.0.1`, or use the Pinokio install flow, which does this automatically.
-
-## Directory Structure
-
-After setup, your directory should look like:
-
+```sh
+node --test tests/launcher.test.js
+python -m unittest discover -s tests -p "test_*.py"
 ```
-GLM-TTS-Pinokio/
-├── GLM-TTS/                # Main code (cloned by install.js)
-│   ├── conda_env/          # Conda environment
-│   ├── ckpt/                # Model checkpoints (downloaded)
-│   │   ├── speech_tokenizer/
-│   │   ├── llm/
-│   │   ├── flow/
-│   │   ├── vocoder/
-│   │   └── ...
-│   ├── glmtts_inference.py
-│   └── tools/gradio_app.py
-├── requirements.txt         # Pre-patched requirements installed by install.js
-└── SETUP_GUIDE.md           # This file
-```
+
+These cover menu transitions, readiness URL capture, and the Python entry point
+with a mocked UI. They do not load models or exercise real inference.

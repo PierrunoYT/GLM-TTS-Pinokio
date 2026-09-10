@@ -80,12 +80,21 @@ module.exports = {
         }]
       }
     } else {
-      return [{
+      const items = [{
         default: true,
         icon: "fa-solid fa-plug",
         text: "Install",
         href: "install.js",
       }]
+      if (info.exists("GLM-TTS")) {
+        items.push({
+          icon: "fa-regular fa-circle-xmark",
+          text: "Reset incomplete installation",
+          href: "reset.js",
+          confirm: "Delete GLM-TTS, including its environment, checkpoints, and any files saved inside it?"
+        })
+      }
+      return items
     }
   }
 }

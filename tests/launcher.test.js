@@ -14,6 +14,14 @@ test('partial installations offer Install, completed installations offer Start',
   assert.equal((await menu(['GLM-TTS/conda_env', 'GLM-TTS/.installed']))[0].href, 'start.js')
 })
 
+test('an interrupted clone can be reset without a completed environment', async () => {
+  const items = await menu(['GLM-TTS'])
+  assert.equal(items[0].href, 'install.js')
+  assert.equal(items[1].href, 'reset.js')
+  assert.ok(items[1].confirm)
+  assert.equal((await menu()).length, 1)
+})
+
 test('maintenance remains visible without installation files', async () => {
   for (const script of ['update', 'reset', 'link', 'install']) {
     const items = await menu([], [`${script}.js`])
