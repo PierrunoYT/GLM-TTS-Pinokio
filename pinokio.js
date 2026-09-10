@@ -1,17 +1,28 @@
-const path = require('path')
 module.exports = {
   version: "3.7",
   title: "GLM-TTS",
   description: "🎙️ Controllable & Emotion-Expressive Zero-shot TTS with Multi-Reward Reinforcement Learning. High-quality text-to-speech synthesis supporting zero-shot voice cloning and streaming inference with natural emotional expression.",
   icon: "icon.jpg",
   menu: async (kernel, info) => {
-    let installed = info.exists("GLM-TTS/conda_env")
+    let installed = info.exists("GLM-TTS/conda_env") && info.exists("GLM-TTS/.installed")
     let running = {
       install: info.running("install.js"),
       start: info.running("start.js"),
       update: info.running("update.js"),
       reset: info.running("reset.js"),
       link: info.running("link.js")
+    }
+    // Maintenance must remain visible even after reset removes the environment.
+    const maintenance = [
+      ["update", "Updating"], ["reset", "Resetting"], ["link", "Deduplicating"]
+    ].find(([script]) => running[script])
+    if (maintenance) {
+      return [{
+        default: true,
+        icon: "fa-solid fa-terminal",
+        text: maintenance[1],
+        href: `${maintenance[0]}.js`
+      }]
     }
     if (running.install) {
       return [{
@@ -42,27 +53,6 @@ module.exports = {
             href: "start.js",
           }]
         }
-      } else if (running.update) {
-        return [{
-          default: true,
-          icon: 'fa-solid fa-terminal',
-          text: "Updating",
-          href: "update.js",
-        }]
-      } else if (running.reset) {
-        return [{
-          default: true,
-          icon: 'fa-solid fa-terminal',
-          text: "Resetting",
-          href: "reset.js",
-        }]
-      } else if (running.link) {
-        return [{
-          default: true,
-          icon: 'fa-solid fa-terminal',
-          text: "Deduplicating",
-          href: "link.js",
-        }]
       } else {
         return [{
           default: true,

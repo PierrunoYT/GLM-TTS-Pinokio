@@ -5,12 +5,18 @@ module.exports = {
   run: [
     // Clone GLM-TTS repository
     {
+      when: "{{!exists('GLM-TTS')}}",
       method: "shell.run",
       params: {
         message: [
           "git clone https://github.com/zai-org/GLM-TTS.git"
         ],
       }
+    },
+    {
+      when: "{{exists('GLM-TTS/.installed')}}",
+      method: "fs.rm",
+      params: { path: "GLM-TTS/.installed" }
     },
     {
       method: "shell.run",
@@ -90,6 +96,10 @@ module.exports = {
           "powershell -Command \"(Get-Content tools/gradio_app.py) -replace 'server_name=\\\"0.0.0.0\\\"', 'server_name=\\\"127.0.0.1\\\"' | Set-Content tools/gradio_app.py\""
         ],
       }
+    },
+    {
+      method: "fs.write",
+      params: { path: "GLM-TTS/.installed", text: "Installation completed\n" }
     },
     {
       method: "notify",
