@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict')
 const test = require('node:test')
 const launcher = require('../pinokio')
+const start = require('../start')
 
 const menu = (files = [], running = [], local) => launcher.menu({}, {
   exists: file => files.includes(file),
@@ -28,4 +29,15 @@ test('running server opens the captured URL, or its terminal while starting', as
   assert.equal((await menu(files, ['start.js']))[0].href, 'start.js')
   assert.equal((await menu(files, ['start.js'], {url: 'http://127.0.0.1:7861'}))[0].href,
     'http://127.0.0.1:7861')
+})
+
+test('URL capture ignores unrelated links and captures the Gradio readiness message', () => {
+  const event = start.run.find(step => step.method === 'shell.run').params.on[0].event
+  const [, pattern, flags] = event.match(/^\/(.*)\/([a-z]*)$/)
+  const regex = new RegExp(pattern, flags)
+  assert.equal(regex.test('See http://example.com for help'), false)
+  for (const host of ['127.0.0.1', 'localhost']) {
+    const url = `http://${host}:7861`
+    assert.equal(regex.exec(`* Running on local URL:  ${url}`)[1], url)
+  }
 })

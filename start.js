@@ -6,14 +6,11 @@ module.exports = {
       params: {
         conda: "conda_env",
         path: "GLM-TTS",
-        env: {
-          "PYTHONPATH": "."
-        },
         message: [
-          "python tools/gradio_app.py"
+          "python ../app/launch.py"
         ],
         on: [{
-          "event": "/(http:\\/\\/\\S+)/",
+          "event": "/running on .+(http:\/\/\\S+)/i",
           "done": true
         }]
       }
