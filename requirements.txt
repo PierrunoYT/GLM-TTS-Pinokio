@@ -1,4 +1,17 @@
 numpy==1.26.4
+setuptools==69.5.1
+soxr
+importlib-resources
+# Whisper dependencies also needed when ROCm uses --no-deps to preserve its Triton.
+numba
+more-itertools
+# Preserve the selected backend during subsequent dependency installs.
+torch==2.7.0; sys_platform != 'darwin' or platform_machine == 'arm64'
+torchaudio==2.7.0; sys_platform != 'darwin' or platform_machine == 'arm64'
+torchvision==0.22.0; sys_platform != 'darwin' or platform_machine == 'arm64'
+torch==2.2.2; sys_platform == 'darwin' and platform_machine != 'arm64'
+torchaudio==2.2.2; sys_platform == 'darwin' and platform_machine != 'arm64'
+torchvision==0.17.2; sys_platform == 'darwin' and platform_machine != 'arm64'
 scipy==1.15.3
 sentencepiece==0.1.99
 soundfile==0.12.1

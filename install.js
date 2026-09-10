@@ -21,12 +21,23 @@ module.exports = {
     {
       method: "shell.run",
       params: {
-      conda: {
-        path: "conda_env",
-        python: "python=3.10.16"
+        conda: {
+          path: "conda_env",
+          python: "python=3.10.16"
         },
         path: "GLM-TTS",
-        message: "conda install -y -c conda-forge pynini"
+        message: "conda install -y -c conda-forge pynini ffmpeg"
+      }
+    },
+    // Select the backend before packages that transitively require torch.
+    {
+      method: "script.start",
+      params: {
+        uri: "torch.js",
+        params: {
+          conda: "conda_env",
+          path: "GLM-TTS"
+        }
       }
     },
     // Install dependencies from pre-patched requirements.txt in repo root
@@ -41,13 +52,14 @@ module.exports = {
         ],
       }
     },
-    // Install OpenAI Whisper with --no-build-isolation
+    // ROCm supplies its own Triton distribution; do not overwrite it with CUDA Triton.
+    // Whisper's remaining dependencies are explicitly included in requirements.txt.
     {
       method: "shell.run",
       params: {
         conda: "conda_env",
         path: "GLM-TTS",
-        message: "uv pip install openai-whisper==20231117 --no-build-isolation"
+        message: "uv pip install openai-whisper==20240930 --no-build-isolation -c ../requirements.txt {{gpu === 'amd' && platform === 'linux' ? '--no-deps' : ''}}"
       }
     },
     // Install WeTextProcessing without pynini (pynini has no Windows pip wheel)
@@ -57,20 +69,8 @@ module.exports = {
         conda: "conda_env",
         path: "GLM-TTS",
         message: [
-          "uv pip install soxr",
           "uv pip install WeTextProcessing==1.0.3 --no-deps"
         ],
-      }
-    },
-    // Install PyTorch with CUDA support
-    {
-      method: "script.start",
-      params: {
-        uri: "torch.js",
-        params: {
-          conda: "conda_env",
-          path: "GLM-TTS"
-        }
       }
     },
     // Pre-download GLM-TTS model from HuggingFace
@@ -82,6 +82,15 @@ module.exports = {
         message: [
           "hf download zai-org/GLM-TTS --local-dir=./ckpt"
         ],
+      }
+    },
+    // Check critical imports before marking an installation usable.
+    {
+      method: "shell.run",
+      params: {
+        conda: "conda_env",
+        path: "GLM-TTS",
+        message: "python -c \"import torch, torchaudio, torchvision, whisper, pynini, tn, gradio, onnxruntime\""
       }
     },
     {
