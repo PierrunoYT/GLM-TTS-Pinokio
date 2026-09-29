@@ -26,7 +26,8 @@ module.exports = {
         "path": "{{args && args.path ? args.path : '.'}}",
         "message": [
           "uv pip install torch==2.7.0 torchvision==0.22.0 torchaudio==2.7.0 {{args && args.xformers ? 'xformers==0.0.30' : ''}} --index https://download.pytorch.org/whl/cu128 --index-strategy unsafe-first-match --reinstall-package torch --reinstall-package torchvision --reinstall-package torchaudio -c ../requirements.txt",
-          "uv pip install onnxruntime_gpu==1.19.0 -c ../requirements.txt",
+          // onnxruntime_gpu 1.19.0 publishes no Linux ARM64 wheel.
+          "uv pip install {{arch === 'arm64' ? 'onnxruntime' : 'onnxruntime_gpu'}}==1.19.0 -c ../requirements.txt",
           "uv pip install ninja",
           "uv pip install deepspeed==0.17.5 -c ../requirements.txt"
         ]

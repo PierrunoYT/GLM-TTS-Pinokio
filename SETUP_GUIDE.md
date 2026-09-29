@@ -22,7 +22,7 @@ shown in Pinokio. The launcher imports the upstream UI without modifying it.
 
 | Platform | Selected backend |
 | --- | --- |
-| Windows/Linux with NVIDIA | PyTorch 2.7.0, CUDA 12.8 |
+| Windows/Linux with NVIDIA | PyTorch 2.7.0, CUDA 12.8; CPU ONNX Runtime on Linux ARM64 |
 | Linux with AMD | PyTorch 2.7.0, ROCm 6.3; CPU ONNX Runtime |
 | Windows with AMD | CPU; upstream does not select DirectML devices |
 | Apple Silicon | PyTorch 2.7.0 from PyPI; upstream currently selects CPU |
